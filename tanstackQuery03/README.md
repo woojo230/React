@@ -1,11 +1,101 @@
 # Tanstack-Query(React Query)
 
-**서버 상태 관리 라이브러리**
+### Infinity Scroll(무한 스크롤)
 
-- 서버로부터 데이터 가져오기, 데이터 캐싱, 캐시 제어 등 데이터를 쉽고 효율적으로 관리할 수 있는 라이브러리
-- 대표적인 기능
-  - 데이터 가져오기 및 캐싱(data caching)
-  - 동일 요청의 중복 제거(Memoization)
-  - 무한 스크롤, 페이지네이션 등의 성능 최적화
-  - 네트워크 재연결, 요청 실패 등의 자동 갱신
-  - 신선한 데이터 유지
+1. 인터페이스 정의
+
+```tsx
+interface MovieDataProps {
+  id: number;
+  title: string;
+  overview: string;
+  release_date: string;
+  vote_average: number;
+  poster_path: string;
+}
+
+interface PageProps {
+  results: MovieDataProps[];
+  total_pages: number;
+}
+```
+
+- 모든 데이터를 타입으로 지정하면 코드가 복잡해지고 유지보수가 어려워짐
+- 사용하지 않는 데이터까지 타입을 지정할 필요가 없음
+- 필요한 데이터만 타입 지정하면 된다
+
+---
+
+2. useInfiniteQuery(useQuery 아님 주의)
+
+```tsx
+const { data, isFetchingNextPage, fetchNextPage, hasNextPage } =
+  useInfiniteQuery<PageProps, Error>({
+    queryKey: ['movies'],
+    queryFn: ({ pageParam }) => fetchData({ pageParam: pageParam as number }),
+    initialPageParam: 1, // 첫 페이지를 1로 설정
+    getNextPageParam: (lastPage, pages) => {
+      return pages.length < lastPage.total_pages ? pages.length + 1 : undefined;
+    },
+  });
+```
+
+---
+
+3. queryKey: ['movies']
+
+- React Query에서 데이터를 캐싱할 때 고유한 키
+- 같은 queryKey를 가진 쿼리는 동일한 데이터를 공유함
+
+---
+
+4. queryFn: ({ pageParam }) => fetchData({ pageParam: pageParam as number })
+
+- 데이터 패칭하는 함수
+- { pageParam }은 현재 페이지 번호
+- fetchData()를 호출할 때, pageParam을 number로 변환해 줘야 오류가 안 남에 주의
+
+---
+
+5. initialPageParam: 1
+
+- 첫 페이지를 1로 설정
+
+---
+
+6. getNextPageParam
+
+```tsx
+getNextPageParam: (lastPage, pages) => {
+  return pages.length < lastPage.total_pages ? pages.length + 1 : undefined;
+};
+```
+
+- 다음 페이지 번호를 결정하는 로직
+- lastPage.total_pages보다 현재 pages.length가 작으면 다음 페이지 존재
+- 다음 페이지를 pages.length + 1로 반환
+
+---
+
+7. useInfiniteQuery에서 반환된 값들
+   |data|불러온 모든 페이지 데이터|
+   |isFetchingNextPage|다음 페이지를 가져오는 중인지 여부 (true/false)|
+   |fetchNextPage()|다음 페이지 요청 함수|
+   |hasNextPage|다음 페이지가 있는지 여부 (true/false)
+
+---
+
+8. 버튼 적용 코드
+
+```tsx
+<button
+  onClick={() => fetchNextPage()}
+  disabled={!hasNextPage || isFetchingNextPage}
+>
+  {isFetchingNextPage ? '로딩 중...' : '더 보기'}
+</button>
+```
+
+- 클릭하면 fetchNextPage() 실행해서 다음 페이지 가져오기
+- hasNextPage === false면 더 이상 가져올 페이지가 없으므로 버튼 비활성화
+- isFetchingNextPage === true면 로딩 중... 표시
