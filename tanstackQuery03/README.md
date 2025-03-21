@@ -26,11 +26,42 @@ interface PageProps {
 
 ---
 
-2. **useInfiniteQuery(useQuery 아님 주의)**
+2. **데이터 패칭 함수 정의**
+
+```tsx
+async function fetchData({ pageParam = 1 }: { pageParam: number }) {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${pageParam}&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200`,
+      {
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('API 요청 실패');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return { results: [], total_pages: 0 };
+  }
+}
+```
+
+- props의 기본값 설정
+
+---
+
+3. **useInfiniteQuery(useQuery 아님 주의)**
 
 ```tsx
 const { data, isFetchingNextPage, fetchNextPage, hasNextPage } =
-  useInfiniteQuery<PageProps, Error>({
+  useInfiniteQuery<PageProps>({
     queryKey: ['movies'],
     queryFn: ({ pageParam }) => fetchData({ pageParam: pageParam as number }),
     initialPageParam: 1, // 첫 페이지를 1로 설정
@@ -42,28 +73,28 @@ const { data, isFetchingNextPage, fetchNextPage, hasNextPage } =
 
 ---
 
-3. **queryKey: ['movies']**
+4. **queryKey: ['movies']**
 
 - React Query에서 데이터를 캐싱할 때 고유한 키
 - 같은 queryKey를 가진 쿼리는 동일한 데이터를 공유함
 
 ---
 
-4. **queryFn: ({ pageParam }) => fetchData({ pageParam: pageParam as number })**
+5. **queryFn: ({ pageParam }) => fetchData({ pageParam: pageParam as number })**
 
 - 데이터 패칭하는 함수
 - { pageParam }은 현재 페이지 번호
-- fetchData()를 호출할 때, pageParam을 number로 변환해 줘야 오류가 안 남에 주의
+- fetchData()를 호출할 때, pageParam을 number로 명시적 형변환
 
 ---
 
-5. **initialPageParam: 1**
+6. **initialPageParam: 1**
 
 - 첫 페이지를 1로 설정
 
 ---
 
-6. **getNextPageParam**
+7. **getNextPageParam**
 
 ```tsx
 getNextPageParam: (lastPage, pages) => {
@@ -77,7 +108,7 @@ getNextPageParam: (lastPage, pages) => {
 
 ---
 
-7. **useInfiniteQuery에서 반환된 값들**
+8. **useInfiniteQuery에서 반환된 값들**
    | 변수명 | 설명 |
    |--------|--------------------------------|
    | data | 불러온 모든 페이지 데이터 |
@@ -87,7 +118,7 @@ getNextPageParam: (lastPage, pages) => {
 
 ---
 
-8. **버튼 적용 코드**
+9. **버튼 적용 코드**
 
 ```tsx
 <button
