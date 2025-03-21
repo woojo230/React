@@ -2,7 +2,7 @@
 
 ### Infinity Scroll(무한 스크롤)
 
-1. 인터페이스 정의
+1. **인터페이스 정의**
 
 ```tsx
 interface MovieDataProps {
@@ -26,7 +26,7 @@ interface PageProps {
 
 ---
 
-2. useInfiniteQuery(useQuery 아님 주의)
+2. **useInfiniteQuery(useQuery 아님 주의)**
 
 ```tsx
 const { data, isFetchingNextPage, fetchNextPage, hasNextPage } =
@@ -42,14 +42,14 @@ const { data, isFetchingNextPage, fetchNextPage, hasNextPage } =
 
 ---
 
-3. queryKey: ['movies']
+3. **queryKey: ['movies']**
 
 - React Query에서 데이터를 캐싱할 때 고유한 키
 - 같은 queryKey를 가진 쿼리는 동일한 데이터를 공유함
 
 ---
 
-4. queryFn: ({ pageParam }) => fetchData({ pageParam: pageParam as number })
+4. **queryFn: ({ pageParam }) => fetchData({ pageParam: pageParam as number })**
 
 - 데이터 패칭하는 함수
 - { pageParam }은 현재 페이지 번호
@@ -57,13 +57,13 @@ const { data, isFetchingNextPage, fetchNextPage, hasNextPage } =
 
 ---
 
-5. initialPageParam: 1
+5. **initialPageParam: 1**
 
 - 첫 페이지를 1로 설정
 
 ---
 
-6. getNextPageParam
+6. **getNextPageParam**
 
 ```tsx
 getNextPageParam: (lastPage, pages) => {
@@ -77,15 +77,17 @@ getNextPageParam: (lastPage, pages) => {
 
 ---
 
-7. useInfiniteQuery에서 반환된 값들
-   |data|불러온 모든 페이지 데이터|
-   |isFetchingNextPage|다음 페이지를 가져오는 중인지 여부 (true/false)|
-   |fetchNextPage()|다음 페이지 요청 함수|
-   |hasNextPage|다음 페이지가 있는지 여부 (true/false)
+7. **useInfiniteQuery에서 반환된 값들**
+   | 변수명 | 설명 |
+   |--------|--------------------------------|
+   | data | 불러온 모든 페이지 데이터 |
+   | isFetchingNextPage | 다음 페이지를 가져오는 중인지 여부 (true/false) |
+   | fetchNextPage() | 다음 페이지 요청 함수 |
+   | hasNextPage | 다음 페이지가 있는지 여부 (true/false) |
 
 ---
 
-8. 버튼 적용 코드
+8. **버튼 적용 코드**
 
 ```tsx
 <button
